@@ -1,0 +1,36 @@
+version: '3'
+
+networks:
+  public-net:
+    external: true
+  private-net:
+    external: true
+
+services:
+  search:
+    build:
+      context: .
+      dockerfile: ${DOCKER_FILE}
+    image: search/sachi:${DOCKER_IMAGE_BUILD_TYPE}
+    restart: unless-stopped
+    command: npm run ${DOCKER_CONTAINER_COMMAND}
+    logging:
+      driver: "json-file"
+      options:
+          max-file: "2"
+          max-size: "10m"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=public-net"
+      - "traefik.frontend.rule=Host:${TRAEFIK_HOST};PathPrefix:${TRAEFIK_PATHPREFIX}"
+      - "traefik.port=3000"
+    networks:
+      - public-net
+      - private-net
+    environment:
+      - "API_HOST=${API_HOST}"
+      - "API_PORT=${API_PORT}"
+      - "ALGOLIA_APPLICATION_ID=${ALGOLIA_APPLICATION_ID}"
+      - "ALGOLIA_SEARCH_KEY=${ALGOLIA_SEARCH_KEY}"
+      - "ALGOLIA_ADMIN_KEY=${ALGOLIA_ADMIN_KEY}"
+      - "GOOGLE_APPLICATION_CREDENTIALS=${GOOGLE_APPLICATION_CREDENTIALS}"
